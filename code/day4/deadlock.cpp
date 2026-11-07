@@ -21,7 +21,7 @@ void thread2()
 
 int main()
 {
-    std::thread t1(thread1);
+    std::thread t1(thread1); //添加线程  
     std::thread t2(thread2);
 
     t1.join();
