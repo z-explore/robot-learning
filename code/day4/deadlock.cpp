@@ -22,10 +22,10 @@ void thread2()
 int main()
 {
     std::thread t1(thread1); //添加线程  
-    std::thread t2(thread2);
+    std::thread t2(thread2);    //添加线程  
 
-    t1.join();
-    t2.join();
+    t1.join(); //等待线程结束  
+    t2.join(); //等待线程结束  
 
-    return 0;
+    return 0; //返回0  
 }
