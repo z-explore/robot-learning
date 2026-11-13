@@ -5,6 +5,7 @@ The model is OpenAI Whisper, which is public. Nothing here inspects Typeless.
 
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from pathlib import Path
 
@@ -28,7 +29,13 @@ class LocalWhisper:
         path = Path(audio_path)
         if not path.is_file():
             raise FileNotFoundError(path)
-        segments, _info = self._load().transcribe(str(path), language=self.language)
+        segments, _info = self._load().transcribe(
+            str(path),
+            language=self.language,
+            beam_size=1,
+            best_of=1,
+            condition_on_previous_text=False,
+        )
         return "".join(segment.text for segment in segments).strip()
 
     def _load(self) -> object:
@@ -44,4 +51,22 @@ def _load_faster_whisper(model_name: str) -> object:
         raise RuntimeError(
             "没有安装 faster-whisper。在本机执行 python3 -m pip install faster-whisper 后再试。"
         ) from error
-    return WhisperModel(model_name, device="cpu", compute_type="int8")
+    threads = _cpu_threads()
+    os.environ["OMP_NUM_THREADS"] = str(threads)
+    os.environ["MKL_NUM_THREADS"] = str(threads)
+    return WhisperModel(
+        model_name,
+        device="cpu",
+        compute_type="int8",
+        cpu_threads=threads,
+        num_workers=1,
+    )
+
+
+def _cpu_threads() -> int:
+    raw = os.environ.get("VOICEIME_CPU_THREADS", "2")
+    try:
+        threads = int(raw)
+    except ValueError:
+        return 2
+    return max(1, threads)

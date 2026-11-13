@@ -161,9 +161,10 @@ class LocalAsrTests(unittest.TestCase):
                 self.text = text
 
         class Model:
-            def transcribe(self, path: str, language: str | None = None) -> tuple[list[Segment], None]:
+            def transcribe(self, path: str, language: str | None = None, **_options: object) -> tuple[list[Segment], None]:
                 self.path = path
                 self.language = language
+                self.options = _options
                 return [Segment("明天"), Segment("开会")], None
 
         model = Model()
@@ -173,6 +174,7 @@ class LocalAsrTests(unittest.TestCase):
             text = LocalWhisper(model_name="base", language="zh", loader=lambda name: model).transcribe(audio)
         self.assertEqual(text, "明天开会")
         self.assertEqual(model.language, "zh")
+        self.assertEqual(model.options["beam_size"], 1)
 
     def test_missing_package_explains_how_to_install(self) -> None:
         real_import = __import__

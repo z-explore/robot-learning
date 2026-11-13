@@ -15,7 +15,7 @@ sudo apt install alsa-utils
 python3 -m voiceime say --seconds 8 --inject auto
 ```
 
-第一次运行会下载 `base` 模型。换成 `--model small` 中文更稳，体积也更大。已有音频文件时：
+第一次运行会下载 `base` 模型。识别时默认只用 2 个 CPU 核心，避免把整个桌面占满。电脑仍然很卡时，改用更小的模型：`python3 -m voiceime say --seconds 8 --model tiny --inject stdout`。中文想更稳再用 `--model small`，它更吃资源。已有音频文件时：
 
 ```bash
 python3 -m voiceime say --file note.wav --inject stdout

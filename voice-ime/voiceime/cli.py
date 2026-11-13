@@ -58,6 +58,7 @@ def main(argv: list[str] | None = None) -> int:
         audio = _prepare_audio(args)
         temporary = audio if args.seconds is not None else None
         if args.command == "say":
+            print("正在把录音转成文字，这时电脑会忙一会儿。", file=sys.stderr)
             text = LocalWhisper(model_name=args.model, language=args.language).transcribe(audio).strip()
             if not text:
                 print("没有识别到文字。", file=sys.stderr)
