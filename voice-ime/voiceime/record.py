@@ -10,6 +10,9 @@ from pathlib import Path
 def record_wav(path: Path, seconds: float) -> Path:
     if seconds <= 0:
         raise ValueError("录音时长必须大于 0")
+    duration = int(round(seconds))
+    if duration < 1:
+        raise ValueError("录音时长至少 1 秒")
     if shutil.which("arecord") is None:
         raise RuntimeError("没有找到 arecord。Ubuntu 上可以安装 alsa-utils。")
     destination = Path(path)
@@ -25,7 +28,7 @@ def record_wav(path: Path, seconds: float) -> Path:
             "-c",
             "1",
             "-d",
-            str(seconds),
+            str(duration),
             str(destination),
         ],
         check=False,

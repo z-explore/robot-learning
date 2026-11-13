@@ -16,6 +16,7 @@ from voiceime.inject import inject_text
 from voiceime.local_asr import LocalWhisper
 from voiceime.pipeline import dictate
 from voiceime.polish import polish_locally, polish_text
+from voiceime.record import record_wav
 
 
 class PolishTests(unittest.TestCase):
@@ -139,6 +140,18 @@ class InjectTests(unittest.TestCase):
         with patch("sys.stdout", output):
             inject_text("只打印", backend="stdout")
         self.assertEqual(output.getvalue(), "只打印\n")
+
+
+class RecordTests(unittest.TestCase):
+    def test_arecord_receives_whole_seconds(self) -> None:
+        with TemporaryDirectory() as directory:
+            destination = Path(directory) / "note.wav"
+            with patch("voiceime.record.shutil.which", return_value="/usr/bin/arecord"):
+                with patch("voiceime.record.subprocess.run") as run:
+                    run.return_value = subprocess.CompletedProcess([], 0, "", "")
+                    record_wav(destination, 8.0)
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("-d") + 1], "8")
 
 
 class LocalAsrTests(unittest.TestCase):
