@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 from voiceime.asr import WhisperAsr, encode_multipart
 from voiceime.cli import main
 from voiceime.inject import inject_text
+from voiceime.local_asr import LocalWhisper
 from voiceime.pipeline import dictate
 from voiceime.polish import polish_locally, polish_text
 
@@ -140,6 +141,43 @@ class InjectTests(unittest.TestCase):
         self.assertEqual(output.getvalue(), "只打印\n")
 
 
+class LocalAsrTests(unittest.TestCase):
+    def test_joins_whisper_segments(self) -> None:
+        class Segment:
+            def __init__(self, text: str) -> None:
+                self.text = text
+
+        class Model:
+            def transcribe(self, path: str, language: str | None = None) -> tuple[list[Segment], None]:
+                self.path = path
+                self.language = language
+                return [Segment("明天"), Segment("开会")], None
+
+        model = Model()
+        with TemporaryDirectory() as directory:
+            audio = Path(directory) / "note.wav"
+            audio.write_bytes(b"RIFF")
+            text = LocalWhisper(model_name="base", language="zh", loader=lambda name: model).transcribe(audio)
+        self.assertEqual(text, "明天开会")
+        self.assertEqual(model.language, "zh")
+
+    def test_missing_package_explains_how_to_install(self) -> None:
+        real_import = __import__
+
+        def fail_import(name: str, *args: object, **kwargs: object) -> object:
+            if name == "faster_whisper":
+                raise ImportError("missing")
+            return real_import(name, *args, **kwargs)
+
+        with TemporaryDirectory() as directory:
+            audio = Path(directory) / "note.wav"
+            audio.write_bytes(b"RIFF")
+            with patch("builtins.__import__", fail_import):
+                with self.assertRaises(RuntimeError) as raised:
+                    LocalWhisper().transcribe(audio)
+        self.assertIn("faster-whisper", str(raised.exception))
+
+
 class CliTests(unittest.TestCase):
     def test_polish_command_uses_the_local_cleaner(self) -> None:
         output = io.StringIO()
@@ -156,6 +194,18 @@ class CliTests(unittest.TestCase):
                 status = main(["run", "--file", "missing.wav", "--inject", "stdout"])
         self.assertEqual(status, 1)
         self.assertTrue(any("VOICEIME_ASR_API_KEY" in item for item in written))
+
+    def test_say_prints_the_transcript_without_a_model_download(self) -> None:
+        class Fake:
+            def transcribe(self, path: Path) -> str:
+                return "帮我看一下这段代码"
+
+        output = io.StringIO()
+        with patch("voiceime.cli.LocalWhisper", return_value=Fake()):
+            with patch("sys.stdout", output):
+                status = main(["say", "--file", "note.wav", "--inject", "stdout"])
+        self.assertEqual(status, 0)
+        self.assertEqual(output.getvalue(), "帮我看一下这段代码\n")
 
 
 if __name__ == "__main__":

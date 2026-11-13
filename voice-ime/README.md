@@ -1,18 +1,33 @@
 # voiceime
 
-Linux 上的语音输入小工具。按一次录音：语音识别，大模型整理，再把文字粘贴进当前输入框。
+Linux 上的语音转文字。`say` 用本机 Whisper 把一段录音变成文字，不调用大模型，也不分析 Typeless。
 
-`morluto/rea` 是本地逆向分析工具，仓库里没有语音识别、文本整理或输入框写入。这版不调用 REA，也不分析 Typeless 的程序。链路是公开的三步：Whisper 兼容接口、聊天补全接口、剪贴板粘贴。
+`morluto/rea` 只能查看本机已有程序的结构，里面没有语音识别模型。拆 Typeless 的安装包不能得到一个能听你说话的入口。这里直接用公开的 Whisper。
 
-## 用法
+这台云端环境没有你的麦克风。命令要在你自己的 Ubuntu 上跑。先把光标放进对话输入框，再执行；文字会粘贴进去，你按下发送就能接着对话。没有桌面工具时，结果打印在终端里，复制过来即可。
+
+## 语音转文字
 
 ```bash
 cd voice-ime
+python3 -m pip install faster-whisper
+sudo apt install alsa-utils
+python3 -m voiceime say --seconds 8 --inject auto
+```
+
+第一次运行会下载 `base` 模型。换成 `--model small` 中文更稳，体积也更大。已有音频文件时：
+
+```bash
+python3 -m voiceime say --file note.wav --inject stdout
+```
+
+## 可选的整理
+
+```bash
 export VOICEIME_ASR_API_KEY=...
 export VOICEIME_LLM_API_KEY=...   # 不设置时只用本地规则去口头禅和改口
 
-python3 -m voiceime run --seconds 8 --inject auto
-python3 -m voiceime run --file note.wav --app mail --inject auto
+python3 -m voiceime run --engine local --seconds 8 --inject auto
 python3 -m voiceime polish --local "嗯我想订周五，不对，改成下周一上午十点"
 ```
 
@@ -22,7 +37,7 @@ python3 -m voiceime polish --local "嗯我想订周五，不对，改成下周�
 
 接口地址默认是 `https://api.openai.com/v1`，可以用 `VOICEIME_ASR_BASE_URL`、`VOICEIME_LLM_BASE_URL`、`VOICEIME_ASR_MODEL`、`VOICEIME_LLM_MODEL` 改成别的兼容服务。
 
-音频和原文会发到你配置的接口。命令结束前会删掉本次录音。不要用它口述密码或验证码。它不会在后台监听键盘。
+`say` 的识别在本机完成，音频不会上传。`run` 在使用云端接口时才会把音频和原文发出去。命令结束前会删掉本次录音。不要用它口述密码或验证码。它不会在后台监听键盘。
 
 ## 测试
 
