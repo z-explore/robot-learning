@@ -1,0 +1,11 @@
+CompileFlags:
+  Add:
+    - "-Wno-unknown-warning-option"
+
+Diagnostics:
+  # Avoid false red underlines on #include from include-cleaner
+  UnusedIncludes: None
+  MissingIncludes: None
+
+Index:
+  Background: Build

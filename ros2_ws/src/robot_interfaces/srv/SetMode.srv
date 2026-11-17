@@ -1,0 +1,5 @@
+uint8 mode
+---
+# 回复： 是否成功，以及说明
+bool success
+string message

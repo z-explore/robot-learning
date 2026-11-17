@@ -6,3 +6,7 @@ core.*
 *.so
 *.a
 .vscode/
+.cache/
+compile_commands.json
+**/compile_commands.json
+
