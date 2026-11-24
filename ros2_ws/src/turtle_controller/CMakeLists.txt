@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(turtlesim REQUIRED)
 find_package(robot_interfaces REQUIRED)
 
@@ -19,13 +20,23 @@ add_executable(square_walker src/square_walker.cpp)
 add_executable(status_publisher src/status_publisher.cpp)
 add_executable(status_monitor src/status_monitor.cpp)
 add_executable(rotate_client src/rotate_client.cpp)
+add_executable(fake_map_pub src/fake_map_pub.cpp)
+add_executable(map_listener src/map_listener.cpp)
+
 ament_target_dependencies(circle_publisher rclcpp geometry_msgs)
 ament_target_dependencies(pose_listener rclcpp turtlesim)
 ament_target_dependencies(square_walker rclcpp geometry_msgs turtlesim)
 ament_target_dependencies(status_publisher rclcpp geometry_msgs robot_interfaces)
 ament_target_dependencies(status_monitor rclcpp robot_interfaces)
 ament_target_dependencies(rotate_client rclcpp rclcpp_action turtlesim)
-install(TARGETS circle_publisher pose_listener square_walker status_publisher status_monitor rotate_client DESTINATION lib/${PROJECT_NAME})
+ament_target_dependencies(fake_map_pub rclcpp std_msgs)
+ament_target_dependencies(map_listener rclcpp std_msgs)
+
+install(TARGETS
+ circle_publisher pose_listener square_walker status_publisher 
+ status_monitor rotate_client fake_map_pub map_listener DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
