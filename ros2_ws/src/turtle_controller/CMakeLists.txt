@@ -13,6 +13,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(turtlesim REQUIRED)
 find_package(robot_interfaces REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 add_executable(circle_publisher src/circle_publisher.cpp)
 add_executable(pose_listener src/pose_listener.cpp)
@@ -22,6 +24,7 @@ add_executable(status_monitor src/status_monitor.cpp)
 add_executable(rotate_client src/rotate_client.cpp)
 add_executable(fake_map_pub src/fake_map_pub.cpp)
 add_executable(map_listener src/map_listener.cpp)
+add_executable(pose_from_tf src/pose_from_tf.cpp)
 
 ament_target_dependencies(circle_publisher rclcpp geometry_msgs)
 ament_target_dependencies(pose_listener rclcpp turtlesim)
@@ -31,10 +34,11 @@ ament_target_dependencies(status_monitor rclcpp robot_interfaces)
 ament_target_dependencies(rotate_client rclcpp rclcpp_action turtlesim)
 ament_target_dependencies(fake_map_pub rclcpp std_msgs)
 ament_target_dependencies(map_listener rclcpp std_msgs)
+ament_target_dependencies(pose_from_tf rclcpp tf2 tf2_ros geometry_msgs)
 
 install(TARGETS
  circle_publisher pose_listener square_walker status_publisher 
- status_monitor rotate_client fake_map_pub map_listener DESTINATION lib/${PROJECT_NAME})
+ status_monitor rotate_client fake_map_pub map_listener pose_from_tf DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
